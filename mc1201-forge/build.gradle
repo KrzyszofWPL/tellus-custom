@@ -12,6 +12,7 @@ def distantHorizonsRuntimePath = providers.gradleProperty('mc1201_forge_distant_
 def overriddenSharedMainSources = [
 	'com/yucareux/tellus/network/GeoTpOpenMapPayload.java',
 	'com/yucareux/tellus/network/GeoTpTeleportPayload.java',
+	'com/yucareux/tellus/mixin/HeightRangePlacementMixin.java',
 	'com/yucareux/tellus/worldgen/EarthBiomeSource.java',
 ] as Set
 def sharedMainJavaPath = rootProject.file('src/main/java').toPath().toAbsolutePath().normalize()
