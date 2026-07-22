@@ -78,6 +78,11 @@ legacyForge {
 			sourceSet(sourceSets.main)
 		}
 	}
+
+	unitTest {
+		enable()
+		testedMod = mods.tellus
+	}
 }
 
 mixin {
