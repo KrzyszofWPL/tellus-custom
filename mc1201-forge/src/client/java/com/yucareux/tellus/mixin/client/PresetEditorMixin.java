@@ -2,29 +2,35 @@ package com.yucareux.tellus.mixin.client;
 
 import com.yucareux.tellus.client.screen.EarthCustomizeScreen;
 import com.yucareux.tellus.worldgen.TellusWorldPresets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.client.gui.screens.worldselection.PresetEditor;
+import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin({PresetEditor.class})
-public interface PresetEditorMixin {
+@Mixin(WorldCreationUiState.class)
+public abstract class PresetEditorMixin {
    @Redirect(
-      method = {"<clinit>"},
+      method = "getPresetEditor",
       at = @At(
          value = "INVOKE",
-         target = "Ljava/util/Map;of(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Map;"
+         target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;",
+         remap = false
       )
    )
-   private static Map<Object, Object> tellus$addEarthEditor(Object key1, Object value1, Object key2, Object value2) {
-      Map<Object, Object> editors = new HashMap<>();
-      PresetEditor earthEditor = EarthCustomizeScreen::new;
-      editors.put(key1, value1);
-      editors.put(key2, value2);
-      editors.put(Optional.of(TellusWorldPresets.EARTH), earthEditor);
-      return Map.copyOf(editors);
+   private Object tellus$addEarthEditor(Map<Object, Object> editors, Object key) {
+      Object existing = editors.get(key);
+      if (existing != null) {
+         return existing;
+      }
+
+      if (key.equals(Optional.of(TellusWorldPresets.EARTH))) {
+         PresetEditor earthEditor = EarthCustomizeScreen::new;
+         return earthEditor;
+      }
+
+      return null;
    }
 }
