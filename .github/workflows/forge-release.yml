@@ -32,7 +32,7 @@ jobs:
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
 
       - name: Build Forge 1.20.1 target
-        run: ./gradlew :mc1201-forge:build --stacktrace
+        run: ./gradlew :mc1201-forge:build :mc1201-forge:reobfJar --stacktrace
 
       - name: List build outputs
         run: ls -l mc1201-forge/build/libs

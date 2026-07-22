@@ -1,24 +1,7 @@
-buildscript {
-	repositories {
-		maven { url = 'https://maven.minecraftforge.net/' }
-		maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-		mavenCentral()
-		gradlePluginPortal()
-	}
-	dependencies {
-		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '[6.0,6.2)', changing: true
-		classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-	}
-}
-
 plugins {
-	id 'com.gradleup.shadow' version '9.0.0'
+	id 'net.neoforged.moddev.legacyforge' version '2.0.141'
+	id 'maven-publish'
 }
-
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
 
 def minecraftVersion = '1.20.1'
 def forgeVersion = '47.4.10'
@@ -43,7 +26,6 @@ tasks.withType(AbstractArchiveTask).configureEach {
 
 repositories {
 	mavenCentral()
-	maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 	maven {
 		url = 'https://api.modrinth.com/maven/'
 		content {
@@ -71,33 +53,28 @@ sourceSets {
 	}
 }
 
-minecraft {
-	mappings channel: 'official', version: minecraftVersion
+legacyForge {
+	version = "${minecraftVersion}-${forgeVersion}"
 
 	runs {
 		client {
-			workingDirectory project.file('run')
-			property 'forge.logging.markers', 'REGISTRIES'
-			property 'forge.logging.console.level', 'debug'
-
-			mods {
-				tellus {
-					source sourceSets.main
-				}
-			}
+			client()
 		}
 
 		server {
-			workingDirectory project.file('run')
-			property 'forge.logging.markers', 'REGISTRIES'
-			property 'forge.logging.console.level', 'debug'
+			server()
 			programArgument '--nogui'
+		}
 
-			mods {
-				tellus {
-					source sourceSets.main
-				}
-			}
+		configureEach {
+			systemProperty 'forge.logging.markers', 'REGISTRIES'
+			logLevel = org.slf4j.event.Level.INFO
+		}
+	}
+
+	mods {
+		tellus {
+			sourceSet(sourceSets.main)
 		}
 	}
 }
@@ -108,25 +85,65 @@ mixin {
 	config 'tellus.client.mixins.json'
 }
 
-configurations {
-	shade
-	implementation.extendsFrom shade
-}
-
 dependencies {
-	minecraft "net.minecraftforge:forge:${minecraftVersion}-${forgeVersion}"
-
 	annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-	shade 'org.tukaani:xz:1.10'
-	shade 'io.github.sebasbaumh:mapbox-vector-tile-java:23.2.0'
-	shade 'com.google.protobuf:protobuf-java:3.25.5'
-	shade "com.twelvemonkeys.imageio:imageio-webp:${twelveMonkeysImageioVersion}"
-	shade "com.twelvemonkeys.imageio:imageio-core:${twelveMonkeysImageioVersion}"
-	shade "com.twelvemonkeys.imageio:imageio-metadata:${twelveMonkeysImageioVersion}"
-	shade "com.twelvemonkeys.common:common-lang:${twelveMonkeysImageioVersion}"
-	shade "com.twelvemonkeys.common:common-io:${twelveMonkeysImageioVersion}"
-	shade "com.twelvemonkeys.common:common-image:${twelveMonkeysImageioVersion}"
+	jarJar(implementation('org.tukaani:xz:1.10')) {
+		version {
+			strictly '[1.10,2.0)'
+			prefer '1.10'
+		}
+	}
+	jarJar(implementation('io.github.sebasbaumh:mapbox-vector-tile-java:23.2.0') {
+		exclude group: 'org.slf4j', module: 'slf4j-api'
+	}) {
+		version {
+			strictly '[23.2.0,24.0)'
+			prefer '23.2.0'
+		}
+	}
+	jarJar(implementation('com.google.protobuf:protobuf-java:3.25.5')) {
+		version {
+			strictly '[3.25.5,4.0)'
+			prefer '3.25.5'
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-webp:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-core:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-metadata:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-lang:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-io:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-image:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 	testImplementation 'org.tukaani:xz:1.10'
@@ -168,22 +185,17 @@ java {
 }
 
 jar {
-	archiveClassifier.set('slim')
 	inputs.property 'archivesName', project.base.archivesName
-}
 
-shadowJar {
-	configurations = [project.configurations.shade]
-	archiveClassifier.set('')
-	relocate 'org.tukaani.xz', 'com.yucareux.tellus.shaded.org.tukaani.xz'
+	manifest {
+		attributes([
+			'MixinConfigs': 'tellus.mixins.json,tellus.client.mixins.json'
+		])
+	}
 
 	from(rootProject.file('LICENSE')) {
-		rename { "${it}_${project.base.archivesName.get()}" }
+		rename { "${it}_${inputs.properties.archivesName}" }
 	}
-}
-
-reobf {
-	shadowJar {}
 }
 
 publishing {
