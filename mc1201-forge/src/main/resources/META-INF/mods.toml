@@ -8,9 +8,11 @@ modId="tellus"
 version="${version}"
 displayName="Tellus"
 displayURL="https://github.com/Yucareux/Tellus"
-authors="Me!"
+authors="Yucareux, QNTRL"
 description='''
 Tellus is a Forge mod that recreates real-world terrain in Minecraft by generating Earth-scale landscapes from geographic data.
+
+This mod was originally created by Yucareux, who deserves full credit and gratitude for designing and building Tellus. QNTRL only converted this version to run on Forge 1.20.1.
 '''
 
 [[dependencies.tellus]]
