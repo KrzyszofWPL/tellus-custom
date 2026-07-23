@@ -37,6 +37,19 @@ jobs:
       - name: List build outputs
         run: ls -l mc1201-forge/build/libs
 
+      - name: Verify Mixin refmap wiring
+        run: |
+          JAR="$(ls mc1201-forge/build/libs/Tellus-forge-1.20.1.jar)"
+          tmp="$(mktemp -d)"
+          unzip -o -q "$JAR" 'tellus*.json' -d "$tmp"
+          test -f "$tmp/tellus.refmap.json" || { echo "::error::tellus.refmap.json is missing from the jar"; exit 1; }
+          for cfg in tellus.mixins.json tellus.client.mixins.json; do
+            if ! grep -q '"refmap"' "$tmp/$cfg"; then
+              echo "::error::$cfg does not reference the refmap; production mixins would fail to apply"; exit 1
+            fi
+          done
+          echo "Mixin refmap wiring OK: configs reference tellus.refmap.json"
+
       - name: Upload jar artifact
         uses: actions/upload-artifact@v4
         with:
