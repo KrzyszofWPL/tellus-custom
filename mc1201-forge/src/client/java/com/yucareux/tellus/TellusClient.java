@@ -68,11 +68,16 @@ public final class TellusClient {
             sun.misc.Unsafe unsafe = (sun.misc.Unsafe) unsafeField.get(null);
 
             Field editorsField = PresetEditor.class.getDeclaredField("EDITORS");
+            editorsField.setAccessible(true);
+            // Reading through Field#get (rather than Unsafe#getObject) forces PresetEditor's
+            // <clinit> to run now if it hasn't already. PresetEditor is otherwise untouched
+            // until the "Create World" screen needs it, so without this the lazy <clinit>
+            // would run later and silently overwrite our injected entry with the vanilla map.
+            Map<Optional<ResourceKey<WorldPreset>>, PresetEditor> oldEditors =
+               (Map<Optional<ResourceKey<WorldPreset>>, PresetEditor>) editorsField.get(null);
+
             long offset = unsafe.staticFieldOffset(editorsField);
             Object base = unsafe.staticFieldBase(editorsField);
-
-            Map<Optional<ResourceKey<WorldPreset>>, PresetEditor> oldEditors =
-               (Map<Optional<ResourceKey<WorldPreset>>, PresetEditor>) unsafe.getObject(base, offset);
 
             Map<Optional<ResourceKey<WorldPreset>>, PresetEditor> newEditors = new HashMap<>(oldEditors);
             newEditors.put(Optional.of(TellusWorldPresets.EARTH), EarthCustomizeScreen::new);
