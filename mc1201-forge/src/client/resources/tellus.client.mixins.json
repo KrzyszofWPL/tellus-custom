@@ -7,7 +7,8 @@
 	"client": [
 		"AbstractWidgetAccessor",
 		"LevelLoadingScreenMixin",
-		"MinecraftScreenMixin"
+		"MinecraftScreenMixin",
+		"PresetEditorMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
