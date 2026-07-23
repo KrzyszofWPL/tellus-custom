@@ -8,6 +8,14 @@ final class ThinShellSurfaceOre {
    private static final long JAVA_RANDOM_ADDEND = 11L;
    private static final long JAVA_RANDOM_MASK = 281474976710655L;
 
+   /**
+    * Surfaces at or above this Y are treated as high mountain rock and use a
+    * geological "mountain palette" of emerald, iron and coal only. Notably this
+    * never yields diamonds (nor gold/copper), keeping precious diamonds in the
+    * deep bedrock roots handled by the underground generators.
+    */
+   private static final int HIGH_MOUNTAIN_SURFACE_Y = 160;
+
    private ThinShellSurfaceOre() {
    }
 
@@ -23,6 +31,17 @@ final class ThinShellSurfaceOre {
 
       boolean deepslate = topBlock.is(Blocks.DEEPSLATE);
       int roll = seededRandomInt(seed ^ -7046029254386353131L, 100);
+      if (surfaceY >= HIGH_MOUNTAIN_SURFACE_Y) {
+         // High mountain palette: emerald, iron and coal only (no diamonds).
+         if (roll < 45) {
+            return deepslate ? Blocks.DEEPSLATE_COAL_ORE.defaultBlockState() : Blocks.COAL_ORE.defaultBlockState();
+         } else if (roll < 85) {
+            return deepslate ? Blocks.DEEPSLATE_IRON_ORE.defaultBlockState() : Blocks.IRON_ORE.defaultBlockState();
+         } else {
+            return deepslate ? Blocks.DEEPSLATE_EMERALD_ORE.defaultBlockState() : Blocks.EMERALD_ORE.defaultBlockState();
+         }
+      }
+
       if (roll < 32) {
          return deepslate ? Blocks.DEEPSLATE_COAL_ORE.defaultBlockState() : Blocks.COAL_ORE.defaultBlockState();
       } else if (roll < 60) {

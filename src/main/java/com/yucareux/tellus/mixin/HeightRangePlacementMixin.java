@@ -86,7 +86,9 @@ public abstract class HeightRangePlacementMixin {
    ) {
       int searchBottom = Math.max(
          generator.getMinY() + 1,
-         UndergroundGenerationDepthPolicy.deepestGenerationY(surfaceY, generator.settings().undergroundDepth())
+         UndergroundGenerationDepthPolicy.deepestCaveOreY(
+            surfaceY, generator.settings().undergroundDepth(), generator.getMinY()
+         )
       );
       BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(origin.getX(), surfaceY - 1, origin.getZ());
       for (int y = surfaceY - 1; y >= searchBottom; y--) {

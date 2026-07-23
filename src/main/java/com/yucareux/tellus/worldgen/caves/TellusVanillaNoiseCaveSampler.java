@@ -1,7 +1,6 @@
 package com.yucareux.tellus.worldgen.caves;
 
 import com.google.common.base.Preconditions;
-import com.yucareux.tellus.worldgen.UndergroundGenerationDepthPolicy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -75,12 +74,13 @@ public final class TellusVanillaNoiseCaveSampler {
                continue;
             }
 
-            int actualBottomY = Math.max(
-               chunkMinY + 1,
-               UndergroundGenerationDepthPolicy.deepestGenerationY(
-                  actualSurfaceY, UndergroundGenerationDepthPolicy.MAX_DEPTH_BELOW_SURFACE
-               )
-            );
+            // Caves and ores now fill the whole solid terrain shell instead of a
+            // fixed 64-block band. When supplied, the per-column floor already
+            // reflects the shell's support bottom, which adapts to the configured
+            // underground depth and to the world's own minimum build height, so
+            // tall mountains carve through their full mass and deep custom worlds
+            // generate all the way down. The base bound stays at the world floor.
+            int actualBottomY = chunkMinY + 1;
             if (generationFloorYByColumn != null) {
                actualBottomY = Math.max(actualBottomY, generationFloorYByColumn[columnIndex] + 1);
             }
