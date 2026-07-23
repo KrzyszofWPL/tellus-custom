@@ -1,0 +1,67 @@
+name: Forge 1.20.1 Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'forge-1.20.1-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forge-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-forge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
+
+      - name: Build Forge 1.20.1 jar (reobfuscated)
+        run: ./gradlew :mc1201-forge:reobfJar --stacktrace
+
+      - name: List build outputs
+        run: ls -l mc1201-forge/build/libs
+
+      - name: Upload jar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tellus-forge-1.20.1
+          path: mc1201-forge/build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Tag push -> reuse the pushed tag; manual dispatch -> derive one from the run number.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            TARGET_ARGS=()
+          else
+            TAG="forge-1.20.1-v${{ github.run_number }}"
+            TARGET_ARGS=(--target "${{ github.sha }}")
+          fi
+          RELEASE_JAR="$(ls mc1201-forge/build/libs/Tellus-forge-1.20.1.jar 2>/dev/null || ls mc1201-forge/build/libs/*.jar | grep -v -- '-slim\|-sources' | head -n1)"
+          echo "Releasing jar: $RELEASE_JAR (tag $TAG)"
+          gh release create "$TAG" \
+            "${TARGET_ARGS[@]}" \
+            --title "Tellus – Forge 1.20.1 ($TAG)" \
+            --notes "Automated build of the Tellus mod for Minecraft 1.20.1 (Forge). Download the jar below and drop it into your mods folder." \
+            "$RELEASE_JAR" \
+          || gh release upload "$TAG" "$RELEASE_JAR" --clobber

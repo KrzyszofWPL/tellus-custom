@@ -1,0 +1,78 @@
+{
+  "mappings": {
+    "com/yucareux/tellus/mixin/BiomePrecipitationMixin": {
+      "getPrecipitationAt": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+      "shouldSnow": "Lnet/minecraft/world/level/biome/Biome;m_47519_(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z",
+      "Lnet/minecraft/world/level/biome/Biome;warmEnoughToRain(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/biome/Biome;m_198906_(Lnet/minecraft/core/BlockPos;)Z"
+    },
+    "com/yucareux/tellus/mixin/MinecraftServerInitialSpawnMixin": {
+      "setInitialSpawn": "Lnet/minecraft/server/MinecraftServer;m_177896_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/storage/ServerLevelData;ZZ)V"
+    },
+    "com/yucareux/tellus/mixin/OceanMonumentStructureMixin": {
+      "generatePieces": "Lnet/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure;m_228968_(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder;Lnet/minecraft/world/level/levelgen/structure/Structure$GenerationContext;)V"
+    },
+    "com/yucareux/tellus/mixin/client/LevelLoadingScreenMixin": {
+      "render": "Lnet/minecraft/client/gui/screens/LevelLoadingScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+    },
+    "com/yucareux/tellus/mixin/ChunkSerializerHighYMixin": {
+      "Lnet/minecraft/nbt/CompoundTag;getByte(Ljava/lang/String;)B": "Lnet/minecraft/nbt/CompoundTag;m_128445_(Ljava/lang/String;)B",
+      "read": "Lnet/minecraft/world/level/chunk/storage/ChunkSerializer;m_188230_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/ai/village/poi/PoiManager;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/ProtoChunk;",
+      "Lnet/minecraft/server/level/ServerLevel;getSectionIndexFromSectionY(I)I": "Lnet/minecraft/server/level/ServerLevel;m_151566_(I)I",
+      "Lnet/minecraft/nbt/CompoundTag;putByte(Ljava/lang/String;B)V": "Lnet/minecraft/nbt/CompoundTag;m_128344_(Ljava/lang/String;B)V",
+      "Lnet/minecraft/core/SectionPos;of(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;": "Lnet/minecraft/core/SectionPos;m_123196_(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;",
+      "Lnet/minecraft/world/level/chunk/ChunkAccess;getSectionIndexFromSectionY(I)I": "Lnet/minecraft/world/level/chunk/ChunkAccess;m_151566_(I)I",
+      "write": "Lnet/minecraft/world/level/chunk/storage/ChunkSerializer;m_63454_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;)Lnet/minecraft/nbt/CompoundTag;"
+    },
+    "com/yucareux/tellus/mixin/client/AbstractWidgetAccessor": {
+      "height": "f_93619_:I"
+    },
+    "com/yucareux/tellus/mixin/HeightRangePlacementMixin": {
+      "getPositions": "Lnet/minecraft/world/level/levelgen/placement/HeightRangePlacement;m_213676_(Lnet/minecraft/world/level/levelgen/placement/PlacementContext;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Ljava/util/stream/Stream;"
+    },
+    "com/yucareux/tellus/mixin/BiomeFreezeMixin": {
+      "shouldFreeze(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Z)Z": "Lnet/minecraft/world/level/biome/Biome;m_47480_(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Z)Z"
+    },
+    "com/yucareux/tellus/mixin/OceanMonumentBuildingMixin": {
+      "postProcess": "Lnet/minecraft/world/level/levelgen/structure/structures/OceanMonumentPieces$MonumentBuilding;m_213694_(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/core/BlockPos;)V"
+    }
+  },
+  "data": {
+    "searge": {
+      "com/yucareux/tellus/mixin/BiomePrecipitationMixin": {
+        "getPrecipitationAt": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+        "shouldSnow": "Lnet/minecraft/world/level/biome/Biome;m_47519_(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z",
+        "Lnet/minecraft/world/level/biome/Biome;warmEnoughToRain(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/biome/Biome;m_198906_(Lnet/minecraft/core/BlockPos;)Z"
+      },
+      "com/yucareux/tellus/mixin/MinecraftServerInitialSpawnMixin": {
+        "setInitialSpawn": "Lnet/minecraft/server/MinecraftServer;m_177896_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/storage/ServerLevelData;ZZ)V"
+      },
+      "com/yucareux/tellus/mixin/OceanMonumentStructureMixin": {
+        "generatePieces": "Lnet/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure;m_228968_(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder;Lnet/minecraft/world/level/levelgen/structure/Structure$GenerationContext;)V"
+      },
+      "com/yucareux/tellus/mixin/client/LevelLoadingScreenMixin": {
+        "render": "Lnet/minecraft/client/gui/screens/LevelLoadingScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+      },
+      "com/yucareux/tellus/mixin/ChunkSerializerHighYMixin": {
+        "Lnet/minecraft/nbt/CompoundTag;getByte(Ljava/lang/String;)B": "Lnet/minecraft/nbt/CompoundTag;m_128445_(Ljava/lang/String;)B",
+        "read": "Lnet/minecraft/world/level/chunk/storage/ChunkSerializer;m_188230_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/ai/village/poi/PoiManager;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/ProtoChunk;",
+        "Lnet/minecraft/server/level/ServerLevel;getSectionIndexFromSectionY(I)I": "Lnet/minecraft/server/level/ServerLevel;m_151566_(I)I",
+        "Lnet/minecraft/nbt/CompoundTag;putByte(Ljava/lang/String;B)V": "Lnet/minecraft/nbt/CompoundTag;m_128344_(Ljava/lang/String;B)V",
+        "Lnet/minecraft/core/SectionPos;of(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;": "Lnet/minecraft/core/SectionPos;m_123196_(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;",
+        "Lnet/minecraft/world/level/chunk/ChunkAccess;getSectionIndexFromSectionY(I)I": "Lnet/minecraft/world/level/chunk/ChunkAccess;m_151566_(I)I",
+        "write": "Lnet/minecraft/world/level/chunk/storage/ChunkSerializer;m_63454_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;)Lnet/minecraft/nbt/CompoundTag;"
+      },
+      "com/yucareux/tellus/mixin/client/AbstractWidgetAccessor": {
+        "height": "f_93619_:I"
+      },
+      "com/yucareux/tellus/mixin/HeightRangePlacementMixin": {
+        "getPositions": "Lnet/minecraft/world/level/levelgen/placement/HeightRangePlacement;m_213676_(Lnet/minecraft/world/level/levelgen/placement/PlacementContext;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Ljava/util/stream/Stream;"
+      },
+      "com/yucareux/tellus/mixin/BiomeFreezeMixin": {
+        "shouldFreeze(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Z)Z": "Lnet/minecraft/world/level/biome/Biome;m_47480_(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Z)Z"
+      },
+      "com/yucareux/tellus/mixin/OceanMonumentBuildingMixin": {
+        "postProcess": "Lnet/minecraft/world/level/levelgen/structure/structures/OceanMonumentPieces$MonumentBuilding;m_213694_(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/core/BlockPos;)V"
+      }
+    }
+  }
+}
