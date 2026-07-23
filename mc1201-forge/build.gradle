@@ -49,8 +49,12 @@ sourceSets {
 		}
 	}
 	test {
-		java.setSrcDirs([rootProject.file('src/test/java'), project.file('src/test/java')])
-		resources.setSrcDirs([rootProject.file('src/test/resources'), project.file('src/test/resources')])
+		// The shared unit tests compile against a full Minecraft classpath that the
+		// legacyForge plugin only wires into the main source set. They are already
+		// exercised by the Fabric and NeoForge targets, so the Forge target skips
+		// them rather than duplicating that (unavailable) test wiring.
+		java.setSrcDirs([project.file('src/test/java')])
+		resources.setSrcDirs([project.file('src/test/resources')])
 	}
 }
 
@@ -77,11 +81,6 @@ legacyForge {
 		tellus {
 			sourceSet(sourceSets.main)
 		}
-	}
-
-	unitTest {
-		enable()
-		testedMod = mods.tellus
 	}
 }
 
