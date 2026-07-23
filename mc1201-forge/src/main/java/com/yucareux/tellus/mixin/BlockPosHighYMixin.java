@@ -3,10 +3,10 @@ package com.yucareux.tellus.mixin;
 import com.yucareux.tellus.worldgen.HighYPackedCoordinateProfile;
 import net.minecraft.core.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -53,31 +53,68 @@ public abstract class BlockPosHighYMixin {
       }
    }
 
-   @Inject(method = "getX(J)I", at = @At("HEAD"), cancellable = true)
-   private static void tellus$getX(long packed, CallbackInfoReturnable<Integer> cir) {
+   /**
+    * @author Tellus
+    * @reason Decodes X from the dense global Mercator coordinate profile.
+    */
+   @Overwrite
+   public static int getX(long packed) {
       if (HighYPackedCoordinateProfile.isEnabled()) {
-         cir.setReturnValue(HighYPackedCoordinateProfile.unpackX(packed));
+         return HighYPackedCoordinateProfile.unpackX(packed);
       }
+
+      int leftShift = 64 - (TELLUS$VANILLA_PACKED_Y_LENGTH + TELLUS$VANILLA_HORIZONTAL_BITS) - TELLUS$VANILLA_HORIZONTAL_BITS;
+      int rightShift = 64 - TELLUS$VANILLA_HORIZONTAL_BITS;
+      return (int)(packed << leftShift >> rightShift);
    }
 
-   @Inject(method = "getY(J)I", at = @At("HEAD"), cancellable = true)
-   private static void tellus$getY(long packed, CallbackInfoReturnable<Integer> cir) {
+   /**
+    * @author Tellus
+    * @reason Decodes Y from the dense global Mercator coordinate profile.
+    */
+   @Overwrite
+   public static int getY(long packed) {
       if (HighYPackedCoordinateProfile.isEnabled()) {
-         cir.setReturnValue(HighYPackedCoordinateProfile.unpackY(packed));
+         return HighYPackedCoordinateProfile.unpackY(packed);
       }
+
+      return (int)(packed << 64 - TELLUS$VANILLA_PACKED_Y_LENGTH >> 64 - TELLUS$VANILLA_PACKED_Y_LENGTH);
    }
 
-   @Inject(method = "getZ(J)I", at = @At("HEAD"), cancellable = true)
-   private static void tellus$getZ(long packed, CallbackInfoReturnable<Integer> cir) {
+   /**
+    * @author Tellus
+    * @reason Decodes Z from the dense global Mercator coordinate profile.
+    */
+   @Overwrite
+   public static int getZ(long packed) {
       if (HighYPackedCoordinateProfile.isEnabled()) {
-         cir.setReturnValue(HighYPackedCoordinateProfile.unpackZ(packed));
+         return HighYPackedCoordinateProfile.unpackZ(packed);
       }
+
+      int zOffset = TELLUS$VANILLA_PACKED_Y_LENGTH;
+      return unpackSigned(packed, zOffset, TELLUS$VANILLA_HORIZONTAL_BITS);
    }
 
-   @Inject(method = "asLong(III)J", at = @At("HEAD"), cancellable = true)
-   private static void tellus$asLong(int x, int y, int z, CallbackInfoReturnable<Long> cir) {
+   /**
+    * @author Tellus
+    * @reason Encodes positions with the dense global Mercator coordinate profile.
+    */
+   @Overwrite
+   public static long asLong(int x, int y, int z) {
       if (HighYPackedCoordinateProfile.isEnabled()) {
-         cir.setReturnValue(HighYPackedCoordinateProfile.packClamped(x, y, z));
+         return HighYPackedCoordinateProfile.packClamped(x, y, z);
       }
+
+      long horizontalMask = (1L << TELLUS$VANILLA_HORIZONTAL_BITS) - 1L;
+      long yMask = (1L << TELLUS$VANILLA_PACKED_Y_LENGTH) - 1L;
+      int zOffset = TELLUS$VANILLA_PACKED_Y_LENGTH;
+      int xOffset = TELLUS$VANILLA_PACKED_Y_LENGTH + TELLUS$VANILLA_HORIZONTAL_BITS;
+      return ((long)x & horizontalMask) << xOffset | ((long)y & yMask) | ((long)z & horizontalMask) << zOffset;
+   }
+
+   private static int unpackSigned(long packed, int offset, int bits) {
+      int leftShift = 64 - offset - bits;
+      int rightShift = 64 - bits;
+      return (int)(packed << leftShift >> rightShift);
    }
 }
