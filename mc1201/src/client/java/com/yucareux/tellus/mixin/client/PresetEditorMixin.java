@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Environment(EnvType.CLIENT)
 @Mixin({PresetEditor.class})
-public interface PresetEditorMixin {
+public abstract class PresetEditorMixin {
    @Redirect(
       method = {"<clinit>"},
       at = @At(
