@@ -3,8 +3,8 @@ name: Forge 1.20.1 Release
 on:
   workflow_dispatch:
   push:
-    branches:
-      - claude/mod-forge-1-20-1-port-xwy197
+    tags:
+      - 'forge-1.20.1-v*'
 
 permissions:
   contents: write
@@ -45,15 +45,22 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub release
-        if: github.ref == 'refs/heads/claude/mod-forge-1-20-1-port-xwy197'
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="forge-1.20.1-v${{ github.run_number }}"
+          # Tag push -> reuse the pushed tag; manual dispatch -> derive one from the run number.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            TARGET_ARGS=()
+          else
+            TAG="forge-1.20.1-v${{ github.run_number }}"
+            TARGET_ARGS=(--target "${{ github.sha }}")
+          fi
           RELEASE_JAR="$(ls mc1201-forge/build/libs/Tellus-forge-1.20.1.jar 2>/dev/null || ls mc1201-forge/build/libs/*.jar | grep -v -- '-slim\|-sources' | head -n1)"
-          echo "Releasing jar: $RELEASE_JAR"
+          echo "Releasing jar: $RELEASE_JAR (tag $TAG)"
           gh release create "$TAG" \
-            --target "${{ github.sha }}" \
+            "${TARGET_ARGS[@]}" \
             --title "Tellus – Forge 1.20.1 ($TAG)" \
             --notes "Automated build of the Tellus mod for Minecraft 1.20.1 (Forge). Download the jar below and drop it into your mods folder." \
             "$RELEASE_JAR" \
