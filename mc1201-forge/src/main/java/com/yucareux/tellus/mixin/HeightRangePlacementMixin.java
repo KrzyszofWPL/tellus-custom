@@ -4,6 +4,7 @@ import com.yucareux.tellus.worldgen.EarthChunkGenerator;
 import com.yucareux.tellus.worldgen.UndergroundGenerationDepthPolicy;
 import com.yucareux.tellus.worldgen.caves.TellusCaveDepthMapper;
 import com.yucareux.tellus.worldgen.caves.TellusVanillaWorldGenerationContext;
+import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -11,8 +12,10 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementContext;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,17 +28,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Vanilla underground placed features sample a fixed absolute Y profile. In a
  * Tellus terrain shell that profile may be far from the local underground
  * range. Sample it against a fixed vanilla surface and project the result into
- * Tellus's fixed 64-block generation band instead.
+ * the Tellus terrain shell instead.
+ *
+ * <p>Projection now spans the full solid shell (down to its support bottom /
+ * the world's minimum build height) so ores follow the whole depth of tall
+ * mountains and deep custom worlds. Diamonds are the one exception: they are
+ * pinned to the deep bedrock roots and never surface inside mountains, matching
+ * the requested "emerald/iron/coal in the peaks, diamonds only deep" geology.</p>
  */
 @Mixin(HeightRangePlacement.class)
 public abstract class HeightRangePlacementMixin {
+   /** Diamonds may only generate below this many blocks under sea level. */
+   private static final int DEEP_DIAMOND_CEILING_BELOW_SEA = 48;
+
    @Shadow
    @Final
    private HeightProvider height;
 
    @Inject(
-      method = "getPositions",
+      method = {"getPositions", "method_14452", "m_213904_"},
       at = @At("HEAD"),
+      remap = false,
       cancellable = true
    )
    private void tellus$surfaceRelativeUndergroundHeight(
@@ -63,9 +76,36 @@ public abstract class HeightRangePlacementMixin {
       int actualY = TellusCaveDepthMapper.actualYForVirtualFeature(
          virtualY, virtualSurfaceY, actualSurfaceY, actualBottomY
       );
+
+      if (actualY != Integer.MIN_VALUE
+         && actualY > earthGenerator.getSeaLevel() - DEEP_DIAMOND_CEILING_BELOW_SEA
+         && placesDiamondOre(context)) {
+         // Keep diamonds in the deep bedrock roots; never expose them high inside
+         // mountains. They still generate wherever the shell reaches this deep.
+         callback.setReturnValue(Stream.empty());
+         return;
+      }
+
       callback.setReturnValue(
          actualY == Integer.MIN_VALUE ? Stream.empty() : Stream.of(origin.atY(actualY))
       );
+   }
+
+   private static boolean placesDiamondOre(PlacementContext context) {
+      Optional<PlacedFeature> topFeature = context.topFeature();
+      if (topFeature.isEmpty()) {
+         return false;
+      }
+
+      if (topFeature.get().feature().value().config() instanceof OreConfiguration ore) {
+         for (OreConfiguration.TargetBlockState target : ore.targetStates) {
+            if (target.state.is(Blocks.DIAMOND_ORE) || target.state.is(Blocks.DEEPSLATE_DIAMOND_ORE)) {
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    private static int findUsableUndergroundBottom(
@@ -76,7 +116,9 @@ public abstract class HeightRangePlacementMixin {
    ) {
       int searchBottom = Math.max(
          generator.getMinY() + 1,
-         UndergroundGenerationDepthPolicy.deepestGenerationY(surfaceY, generator.settings().undergroundDepth())
+         UndergroundGenerationDepthPolicy.deepestCaveOreY(
+            surfaceY, generator.settings().undergroundDepth(), generator.getMinY()
+         )
       );
       BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(origin.getX(), surfaceY - 1, origin.getZ());
       for (int y = surfaceY - 1; y >= searchBottom; y--) {

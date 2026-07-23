@@ -28,4 +28,30 @@ class UndergroundGenerationDepthPolicyTest {
       assertTrue(UndergroundGenerationDepthPolicy.containsDepth(19, 20));
       assertFalse(UndergroundGenerationDepthPolicy.containsDepth(20, 20));
    }
+
+   @Test
+   void caveAndOreExtentFillsTheWholeShellInsteadOfTheVanillaBand() {
+      // Unlike the vanilla biome band, caves and ores follow the full configured
+      // shell thickness rather than being capped at 64 blocks.
+      assertEquals(256, UndergroundGenerationDepthPolicy.caveOreDepth(256));
+      // A giant mountain (surface 250, default 256 shell, deep world floor) is
+      // carved down to its support bottom, not to surface - 64.
+      assertEquals(-6, UndergroundGenerationDepthPolicy.caveOreFloorY(250, 256, -368));
+      assertEquals(-5, UndergroundGenerationDepthPolicy.deepestCaveOreY(250, 256, -368));
+   }
+
+   @Test
+   void caveAndOreExtentAdaptsToTheWorldMinimumBuildHeight() {
+      // A player-lowered world floor (e.g. -260) is honored dynamically instead
+      // of stopping at the old hard-coded shallow limit.
+      assertEquals(-260, UndergroundGenerationDepthPolicy.caveOreFloorY(64, 512, -260));
+      // Never carve below the world floor even when the shell would reach lower.
+      assertEquals(-64, UndergroundGenerationDepthPolicy.caveOreFloorY(64, 256, -64));
+   }
+
+   @Test
+   void caveAndOreDepthIsCappedForLoopSafety() {
+      assertEquals(UndergroundGenerationDepthPolicy.MAX_CAVE_ORE_DEPTH, UndergroundGenerationDepthPolicy.caveOreDepth(9_999));
+      assertEquals(0, UndergroundGenerationDepthPolicy.caveOreDepth(-5));
+   }
 }

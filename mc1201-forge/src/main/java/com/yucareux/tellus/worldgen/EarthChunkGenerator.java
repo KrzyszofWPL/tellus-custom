@@ -3464,8 +3464,12 @@ public final class EarthChunkGenerator extends ChunkGenerator {
          for (int localX = 0; localX < CHUNK_SIDE; localX++) {
             int index = chunkIndex(localX, localZ);
             int terrainSurface = waterData.terrainSurface(localX, localZ);
-            result[index] = Math.max(
-               minY, UndergroundGenerationDepthPolicy.generationFloorY(terrainSurface, this.settings.undergroundDepth())
+            // Carve caves and ores through the entire solid terrain shell (down to
+            // its support bottom) rather than a fixed 64-block band, while still
+            // clamping to the world's own minimum build height so deep custom
+            // worlds and tall mountains are filled but the void below is not.
+            result[index] = UndergroundGenerationDepthPolicy.caveOreFloorY(
+               terrainSurface, this.settings.undergroundDepth(), minY
             );
          }
       }

@@ -70,6 +70,28 @@ class ThinShellSurfaceOreTest {
       );
    }
 
+   @Test
+   void highMountainSurfaceUsesEmeraldIronCoalPaletteOnly() {
+      BlockState stone = Blocks.STONE.defaultBlockState();
+      int found = 0;
+      for (int x = -256; x <= 256; x++) {
+         for (int z = -256; z <= 256; z++) {
+            BlockState ore = ThinShellSurfaceOre.resolve(stone, true, false, false, x, 200, z);
+            if (ore.equals(stone)) {
+               continue;
+            }
+
+            found++;
+            assertTrue(
+               ore.is(Blocks.COAL_ORE) || ore.is(Blocks.IRON_ORE) || ore.is(Blocks.EMERALD_ORE),
+               "High mountain surfaces must only expose emerald, iron or coal, but found " + ore
+            );
+         }
+      }
+
+      assertTrue(found > 0, "Expected at least one high-mountain surface ore sample");
+   }
+
    private static OreSample findOreSample(BlockState host, int surfaceY) {
       for (int x = -256; x <= 256; x++) {
          for (int z = -256; z <= 256; z++) {
