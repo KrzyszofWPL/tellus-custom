@@ -1,0 +1,216 @@
+plugins {
+	id 'net.neoforged.moddev.legacyforge' version '2.0.141'
+	id 'maven-publish'
+}
+
+def minecraftVersion = '1.20.1'
+def forgeVersion = '47.4.10'
+def distantHorizonsApiVersion = '7.0.0'
+def twelveMonkeysImageioVersion = '3.13.1'
+def javaVersion = 17
+def distantHorizonsRuntimePath = providers.gradleProperty('mc1201_forge_distant_horizons_runtime_path').orNull
+def overriddenSharedMainSources = [
+	'com/yucareux/tellus/network/GeoTpOpenMapPayload.java',
+	'com/yucareux/tellus/network/GeoTpTeleportPayload.java',
+	'com/yucareux/tellus/mixin/HeightRangePlacementMixin.java',
+	'com/yucareux/tellus/worldgen/EarthBiomeSource.java',
+] as Set
+def sharedMainJavaPath = rootProject.file('src/main/java').toPath().toAbsolutePath().normalize()
+
+base {
+	archivesName = "${rootProject.archives_base_name}-forge-${minecraftVersion}"
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+	archiveVersion.set('')
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url = 'https://api.modrinth.com/maven/'
+		content {
+			includeGroup 'maven.modrinth'
+		}
+	}
+}
+
+sourceSets {
+	main {
+		java {
+			setSrcDirs([rootProject.file('src/main/java'), project.file('src/main/java'), project.file('src/client/java')])
+			exclude { element ->
+				overriddenSharedMainSources.contains(element.relativePath.pathString)
+					&& element.file.toPath().toAbsolutePath().normalize().startsWith(sharedMainJavaPath)
+			}
+		}
+		resources {
+			setSrcDirs([rootProject.file('src/main/resources'), project.file('src/main/resources'), project.file('src/client/resources')])
+		}
+	}
+	test {
+		// The shared unit tests compile against a full Minecraft classpath that the
+		// legacyForge plugin only wires into the main source set. They are already
+		// exercised by the Fabric and NeoForge targets, so the Forge target skips
+		// them rather than duplicating that (unavailable) test wiring.
+		java.setSrcDirs([project.file('src/test/java')])
+		resources.setSrcDirs([project.file('src/test/resources')])
+	}
+}
+
+legacyForge {
+	version = "${minecraftVersion}-${forgeVersion}"
+
+	runs {
+		client {
+			client()
+		}
+
+		server {
+			server()
+			programArgument '--nogui'
+		}
+
+		configureEach {
+			systemProperty 'forge.logging.markers', 'REGISTRIES'
+			logLevel = org.slf4j.event.Level.INFO
+		}
+	}
+
+	mods {
+		tellus {
+			sourceSet(sourceSets.main)
+		}
+	}
+}
+
+mixin {
+	add sourceSets.main, 'tellus.refmap.json'
+	config 'tellus.mixins.json'
+	config 'tellus.client.mixins.json'
+}
+
+dependencies {
+	annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+	jarJar(implementation('org.tukaani:xz:1.10')) {
+		version {
+			strictly '[1.10,2.0)'
+			prefer '1.10'
+		}
+	}
+	jarJar(implementation('io.github.sebasbaumh:mapbox-vector-tile-java:23.2.0') {
+		exclude group: 'org.slf4j', module: 'slf4j-api'
+	}) {
+		version {
+			strictly '[23.2.0,24.0)'
+			prefer '23.2.0'
+		}
+	}
+	jarJar(implementation('com.google.protobuf:protobuf-java:3.25.5')) {
+		version {
+			strictly '[3.25.5,4.0)'
+			prefer '3.25.5'
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-webp:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-core:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.imageio:imageio-metadata:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-lang:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-io:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+	jarJar(implementation("com.twelvemonkeys.common:common-image:${twelveMonkeysImageioVersion}")) {
+		version {
+			strictly '[3.13.1,3.14)'
+			prefer twelveMonkeysImageioVersion
+		}
+	}
+
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+	testImplementation 'org.tukaani:xz:1.10'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+
+	compileOnly "maven.modrinth:DistantHorizonsApi:${distantHorizonsApiVersion}"
+	if (distantHorizonsRuntimePath) {
+		runtimeOnly files(distantHorizonsRuntimePath)
+	}
+}
+
+processResources {
+	inputs.property 'version', project.version
+
+	filesMatching('META-INF/mods.toml') {
+		expand version: inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = javaVersion
+}
+
+tasks.named('test').configure {
+	useJUnitPlatform()
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(javaVersion)
+	}
+
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.toVersion(javaVersion)
+	targetCompatibility = JavaVersion.toVersion(javaVersion)
+}
+
+jar {
+	inputs.property 'archivesName', project.base.archivesName
+
+	manifest {
+		attributes([
+			'MixinConfigs': 'tellus.mixins.json,tellus.client.mixins.json'
+		])
+	}
+
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+publishing {
+	publications {
+		create('mavenJava', MavenPublication) {
+			artifactId = project.base.archivesName.get()
+			from components.java
+		}
+	}
+
+	repositories {
+	}
+}

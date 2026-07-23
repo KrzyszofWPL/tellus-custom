@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.yucareux.tellus.mixin.client",
+	"compatibilityLevel": "JAVA_17",
+	"refmap": "tellus.refmap.json",
+	"client": [
+		"AbstractWidgetAccessor",
+		"LevelLoadingScreenMixin",
+		"MinecraftScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
